@@ -12,7 +12,18 @@ import {
   Users,
   BarChart3,
   User,
-  ArrowLeft
+  ArrowLeft,
+  Tv,
+  Phone,
+  Refrigerator,
+  ChefHat,
+  Bed,
+  Monitor,
+  BookOpen,
+  Shower,
+  Mirror,
+  Dumbbell,
+  Activity
 } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useProfilePicture } from '../../hooks/useProfilePicture';
@@ -23,6 +34,8 @@ interface MobileGameInterfaceProps {
 
 interface GameState {
   day: number;
+  hour: number;
+  minute: number;
   currentRoom: number;
   isPlaying: boolean;
   gameSpeed: number;
@@ -36,12 +49,32 @@ interface GameState {
   };
 }
 
+interface RoomObject {
+  id: string;
+  name: string;
+  icon: React.ComponentType<any>;
+  position: { top: string; left: string };
+  action: {
+    question: string;
+    effects: {
+      health?: number;
+      energy?: number;
+      sleep?: number;
+      social?: number;
+      productivity?: number;
+    };
+    consequence: string;
+  };
+}
+
 const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => {
   const { isDark } = useTheme();
   const { profilePicture, hasProfilePicture } = useProfilePicture();
   
   const [gameState, setGameState] = useState<GameState>({
     day: 1,
+    hour: 8,
+    minute: 0,
     currentRoom: 0,
     isPlaying: false,
     gameSpeed: 1,
@@ -57,39 +90,215 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
 
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showSaveMessage, setShowSaveMessage] = useState(false);
+  const [showModal, setShowModal] = useState<{
+    isOpen: boolean;
+    object: RoomObject | null;
+  }>({ isOpen: false, object: null });
+  const [showConsequence, setShowConsequence] = useState<string | null>(null);
+
+  // Atualizar tempo quando o jogo estiver rodando
+  useEffect(() => {
+    if (!gameState.isPlaying) return;
+
+    const interval = setInterval(() => {
+      setGameState(prev => {
+        let newMinute = prev.minute + (5 * prev.gameSpeed);
+        let newHour = prev.hour;
+        let newDay = prev.day;
+
+        if (newMinute >= 60) {
+          newHour += Math.floor(newMinute / 60);
+          newMinute = newMinute % 60;
+        }
+
+        if (newHour >= 24) {
+          newDay += Math.floor(newHour / 24);
+          newHour = newHour % 24;
+        }
+
+        return {
+          ...prev,
+          minute: newMinute,
+          hour: newHour,
+          day: newDay
+        };
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [gameState.isPlaying, gameState.gameSpeed]);
 
   const rooms = [
     { 
       name: 'Sala', 
-      background: 'from-green-500/30 to-emerald-600/30',
+      background: 'from-green-500/20 to-emerald-600/20',
       emoji: '🛋️',
-      description: 'Relaxe e assista TV'
+      description: 'Relaxe e socialize'
     },
     { 
-      name: 'Academia', 
-      background: 'from-gray-500/30 to-slate-600/30',
-      emoji: '🏋️‍♂️',
-      description: 'Exercite-se e ganhe energia'
+      name: 'Cozinha', 
+      background: 'from-orange-500/20 to-red-600/20',
+      emoji: '🍳',
+      description: 'Prepare refeições saudáveis'
     },
     { 
       name: 'Quarto', 
-      background: 'from-purple-500/30 to-indigo-600/30',
+      background: 'from-purple-500/20 to-indigo-600/20',
       emoji: '🛏️',
-      description: 'Durma e recupere o sono'
+      description: 'Durma e trabalhe'
     },
     { 
       name: 'Banheiro', 
-      background: 'from-blue-500/30 to-cyan-600/30',
+      background: 'from-blue-500/20 to-cyan-600/20',
       emoji: '🚿',
       description: 'Cuide da higiene pessoal'
     },
     { 
-      name: 'Cozinha', 
-      background: 'from-orange-500/30 to-red-600/30',
-      emoji: '🍳',
-      description: 'Prepare refeições saudáveis'
+      name: 'Academia', 
+      background: 'from-gray-500/20 to-slate-600/20',
+      emoji: '🏋️‍♂️',
+      description: 'Exercite-se e ganhe saúde'
     }
   ];
+
+  const roomObjects: { [key: number]: RoomObject[] } = {
+    // Sala
+    0: [
+      {
+        id: 'tv',
+        name: 'TV',
+        icon: Tv,
+        position: { top: '30%', left: '20%' },
+        action: {
+          question: 'Assistir TV?',
+          effects: { social: 15, productivity: -10, energy: -5 },
+          consequence: 'Alex assistiu TV e relaxou, mas perdeu um pouco de produtividade.'
+        }
+      },
+      {
+        id: 'phone',
+        name: 'Telefone',
+        icon: Phone,
+        position: { top: '60%', left: '70%' },
+        action: {
+          question: 'Ligar para um amigo?',
+          effects: { social: 20, energy: -5, sleep: -5 },
+          consequence: 'Alex ligou para um amigo e teve uma conversa agradável.'
+        }
+      }
+    ],
+    // Cozinha
+    1: [
+      {
+        id: 'fridge',
+        name: 'Geladeira',
+        icon: Refrigerator,
+        position: { top: '25%', left: '15%' },
+        action: {
+          question: 'Pegar um lanche saudável?',
+          effects: { health: 15, energy: 10, productivity: -5 },
+          consequence: 'Alex comeu um lanche saudável e se sentiu mais energizado.'
+        }
+      },
+      {
+        id: 'stove',
+        name: 'Fogão',
+        icon: ChefHat,
+        position: { top: '50%', left: '75%' },
+        action: {
+          question: 'Cozinhar uma refeição completa?',
+          effects: { productivity: 10, health: 10, energy: -10, social: -5 },
+          consequence: 'Alex cozinhou uma refeição deliciosa, mas gastou tempo e energia.'
+        }
+      }
+    ],
+    // Quarto
+    2: [
+      {
+        id: 'bed',
+        name: 'Cama',
+        icon: Bed,
+        position: { top: '40%', left: '20%' },
+        action: {
+          question: 'Dormir um pouco?',
+          effects: { sleep: 25, health: 10, energy: 20 },
+          consequence: 'Alex dormiu e se sentiu muito mais descansado e energizado.'
+        }
+      },
+      {
+        id: 'computer',
+        name: 'Computador',
+        icon: Monitor,
+        position: { top: '30%', left: '70%' },
+        action: {
+          question: 'Usar o computador para trabalhar?',
+          effects: { productivity: 20, health: -10, social: -10, sleep: -5 },
+          consequence: 'Alex trabalhou no computador e foi produtivo, mas se cansou.'
+        }
+      },
+      {
+        id: 'books',
+        name: 'Estante de Livros',
+        icon: BookOpen,
+        position: { top: '65%', left: '45%' },
+        action: {
+          question: 'Ler por 1 hora?',
+          effects: { productivity: 10, energy: -10 },
+          consequence: 'Alex leu um livro interessante e aprendeu algo novo.'
+        }
+      }
+    ],
+    // Banheiro
+    3: [
+      {
+        id: 'shower',
+        name: 'Chuveiro',
+        icon: Shower,
+        position: { top: '35%', left: '25%' },
+        action: {
+          question: 'Tomar banho?',
+          effects: { health: 15, energy: 10, productivity: 5 },
+          consequence: 'Alex tomou um banho relaxante e se sentiu renovado.'
+        }
+      },
+      {
+        id: 'mirror',
+        name: 'Espelho',
+        icon: Mirror,
+        position: { top: '25%', left: '70%' },
+        action: {
+          question: 'Se arrumar e cuidar da aparência?',
+          effects: { social: 10, energy: -5, productivity: 5 },
+          consequence: 'Alex se arrumou e se sentiu mais confiante para o dia.'
+        }
+      }
+    ],
+    // Academia
+    4: [
+      {
+        id: 'treadmill',
+        name: 'Esteira',
+        icon: Activity,
+        position: { top: '30%', left: '20%' },
+        action: {
+          question: 'Correr por 30 minutos?',
+          effects: { health: 20, energy: -15, sleep: -10 },
+          consequence: 'Alex correu na esteira e melhorou sua saúde cardiovascular.'
+        }
+      },
+      {
+        id: 'weights',
+        name: 'Pesos',
+        icon: Dumbbell,
+        position: { top: '55%', left: '70%' },
+        action: {
+          question: 'Fazer treino de força?',
+          effects: { health: 15, productivity: 5, energy: -10 },
+          consequence: 'Alex fez um treino de força e se sentiu mais forte.'
+        }
+      }
+    ]
+  };
 
   const weekDays = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
@@ -129,6 +338,8 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
   const resetGame = () => {
     setGameState({
       day: 1,
+      hour: 8,
+      minute: 0,
       currentRoom: 0,
       isPlaying: false,
       gameSpeed: 1,
@@ -147,7 +358,62 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
     setGameState(prev => ({ ...prev, gameSpeed: speed }));
   };
 
+  const handleObjectClick = (object: RoomObject) => {
+    if (gameState.isPlaying) {
+      setGameState(prev => ({ ...prev, isPlaying: false }));
+    }
+    setShowModal({ isOpen: true, object });
+  };
+
+  const handleActionConfirm = () => {
+    if (!showModal.object) return;
+
+    const { effects, consequence } = showModal.object.action;
+    
+    setGameState(prev => {
+      const newFactors = { ...prev.factors };
+      let scoreChange = 0;
+
+      Object.entries(effects).forEach(([factor, change]) => {
+        if (factor in newFactors) {
+          const oldValue = newFactors[factor as keyof typeof newFactors];
+          const newValue = Math.max(0, Math.min(100, oldValue + change));
+          newFactors[factor as keyof typeof newFactors] = newValue;
+          
+          // Calcular mudança na pontuação baseada no efeito
+          if (change > 0) {
+            scoreChange += change * 10;
+          } else {
+            scoreChange += change * 5;
+          }
+        }
+      });
+
+      return {
+        ...prev,
+        factors: newFactors,
+        score: Math.max(0, prev.score + scoreChange)
+      };
+    });
+
+    setShowModal({ isOpen: false, object: null });
+    setShowConsequence(consequence);
+    
+    setTimeout(() => {
+      setShowConsequence(null);
+    }, 3000);
+  };
+
+  const handleActionCancel = () => {
+    setShowModal({ isOpen: false, object: null });
+  };
+
   const currentRoom = rooms[gameState.currentRoom];
+  const currentObjects = roomObjects[gameState.currentRoom] || [];
+
+  const formatTime = (hour: number, minute: number) => {
+    return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className={`h-screen flex flex-col overflow-hidden transition-colors duration-300 ${
@@ -155,7 +421,7 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
     }`}>
       
       {/* SEÇÃO SUPERIOR - 15% da altura */}
-      <header className={`h-[15vh] px-4 py-2 border-b transition-colors duration-300 ${
+      <header className={`h-[15vh] px-3 py-2 border-b transition-colors duration-300 ${
         isDark 
           ? 'bg-slate-900/95 border-slate-800' 
           : 'bg-white/95 border-gray-200'
@@ -163,7 +429,7 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         <div className="h-full flex items-center justify-between">
           
           {/* Lado Esquerdo - Controles do Jogo */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               onClick={onBack}
               className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
@@ -172,7 +438,7 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
                   : 'hover:bg-gray-100 text-gray-900'
               }`}
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </button>
             
             <button
@@ -183,7 +449,7 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
                   : 'bg-emerald-500 hover:bg-emerald-600 text-white'
               }`}
             >
-              {gameState.isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              {gameState.isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
             </button>
             
             <button
@@ -194,7 +460,7 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
                   : 'hover:bg-gray-100 text-emerald-600'
               }`}
             >
-              <Save className="w-4 h-4" />
+              <Save className="w-3 h-3" />
             </button>
             
             <button
@@ -205,7 +471,7 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
                   : 'hover:bg-gray-100 text-orange-600'
               }`}
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-3 h-3" />
             </button>
           </div>
 
@@ -234,6 +500,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
                 isDark ? 'text-slate-400' : 'text-gray-600'
               }`}>
                 {weekDays[(gameState.day - 1) % 7]}
+              </div>
+              <div className={`text-xs font-mono transition-colors duration-300 ${
+                isDark ? 'text-emerald-400' : 'text-emerald-600'
+              }`}>
+                {formatTime(gameState.hour, gameState.minute)}
               </div>
             </div>
           </div>
@@ -278,21 +549,45 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
           }`}>
             
             {/* Emoji do Cômodo */}
-            <div className="text-8xl mb-4 animate-pulse">
+            <div className="text-6xl mb-3 animate-pulse">
               {currentRoom.emoji}
             </div>
             
             {/* Nome do Cômodo */}
-            <h2 className="text-2xl font-bold mb-2">
+            <h2 className="text-xl font-bold mb-2">
               {currentRoom.name}
             </h2>
             
             {/* Descrição */}
-            <p className={`text-sm text-center px-4 transition-colors duration-300 ${
+            <p className={`text-sm text-center px-4 mb-4 transition-colors duration-300 ${
               isDark ? 'text-slate-300' : 'text-gray-700'
             }`}>
               {currentRoom.description}
             </p>
+
+            {/* Objetos Interativos */}
+            {currentObjects.map((object) => {
+              const IconComponent = object.icon;
+              return (
+                <button
+                  key={object.id}
+                  onClick={() => handleObjectClick(object)}
+                  className={`absolute p-3 rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110 border-2 ${
+                    isDark 
+                      ? 'bg-slate-800/80 hover:bg-slate-700 text-white border-slate-600 hover:border-slate-500' 
+                      : 'bg-white/90 hover:bg-gray-100 text-gray-900 border-gray-200 hover:border-gray-300 shadow-lg'
+                  }`}
+                  style={{ 
+                    top: object.position.top, 
+                    left: object.position.left,
+                    transform: 'translate(-50%, -50%)'
+                  }}
+                  title={object.name}
+                >
+                  <IconComponent className="w-5 h-5" />
+                </button>
+              );
+            })}
 
             {/* Indicador de Cômodo */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
@@ -399,6 +694,60 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
           </div>
         </div>
       </footer>
+
+      {/* Modal de Ação */}
+      {showModal.isOpen && showModal.object && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className={`max-w-sm w-full rounded-2xl p-6 border-2 transition-all duration-300 ${
+            isDark 
+              ? 'bg-slate-900 border-slate-700' 
+              : 'bg-white border-gray-200 shadow-2xl'
+          }`}>
+            <div className="text-center mb-6">
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
+                isDark ? 'bg-slate-800' : 'bg-gray-100'
+              }`}>
+                <showModal.object.icon className="w-8 h-8 text-emerald-500" />
+              </div>
+              <h3 className={`text-lg font-bold mb-2 transition-colors duration-300 ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>
+                {showModal.object.action.question}
+              </h3>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleActionCancel}
+                className={`flex-1 py-3 px-4 rounded-xl font-bold transition-colors ${
+                  isDark 
+                    ? 'bg-slate-800 hover:bg-slate-700 text-white' 
+                    : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+                }`}
+              >
+                Não
+              </button>
+              <button
+                onClick={handleActionConfirm}
+                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-4 rounded-xl font-bold transition-colors"
+              >
+                Sim
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mensagem de Consequência */}
+      {showConsequence && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+          <div className={`max-w-xs p-4 rounded-xl shadow-lg transition-all duration-300 ${
+            isDark ? 'bg-slate-800 text-white border border-slate-700' : 'bg-white text-gray-900 border border-gray-200'
+          }`}>
+            <p className="text-sm text-center">{showConsequence}</p>
+          </div>
+        </div>
+      )}
 
       {/* Mensagem de Save */}
       {showSaveMessage && (
