@@ -5,7 +5,7 @@ import SleepCalculator from './SleepCalculator';
 import HelpCenterScreen from './HelpCenterScreen';
 import QuickTipsScreen from './QuickTipsScreen';
 import ContactScreen from './ContactScreen';
-import DreamStoryGame from './DreamStoryGame';
+import MobileGameInterface from './MobileGameInterface';
 
 const MoreContent: React.FC = () => {
   const [showSleepCalculator, setShowSleepCalculator] = useState(false);
@@ -81,7 +81,7 @@ const MoreContent: React.FC = () => {
   }
 
   if (showDreamStory) {
-    return <DreamStoryGame onBack={handleCloseDreamStory} />;
+    return <MobileGameInterface onBack={handleCloseDreamStory} />;
   }
   const bonusContent = [
     {
