@@ -1,30 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Play, 
-  Pause, 
-  Save, 
-  RotateCcw, 
-  ChevronLeft, 
-  ChevronRight,
-  Heart,
-  Zap,
-  Moon,
-  Users,
-  BarChart3,
-  User,
-  ArrowLeft,
-  Tv,
-  Phone,
-  Refrigerator,
-  ChefHat,
-  Bed,
-  Monitor,
-  BookOpen,
-  Shower,
-  Mirror,
-  Dumbbell,
-  Activity
-} from 'lucide-react';
+import { Play, Pause, Save, RotateCcw, ChevronLeft, ChevronRight, Heart, Zap, Moon, Users, BarChart3, User, ArrowLeft, Tv, Phone, Refrigerator, ChefHat, Bed, Monitor, BookOpen, ShowerHead as Shower, Carrot as Mirror, Dumbbell, Activity } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useProfilePicture } from '../../hooks/useProfilePicture';
 
