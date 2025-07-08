@@ -29,6 +29,7 @@ interface RoomObject {
   name: string;
   icon: React.ComponentType<any>;
   position: { top: string; left: string };
+  timeJump: number; // em minutos
   action: {
     question: string;
     effects: {
@@ -70,10 +71,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
     object: RoomObject | null;
   }>({ isOpen: false, object: null });
   const [showConsequence, setShowConsequence] = useState<string | null>(null);
+  const [showPauseScreen, setShowPauseScreen] = useState(false);
 
   // Atualizar tempo quando o jogo estiver rodando
   useEffect(() => {
-    if (!gameState.isPlaying) return;
+    if (!gameState.isPlaying || showPauseScreen) return;
 
     const interval = setInterval(() => {
       setGameState(prev => {
@@ -101,7 +103,7 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [gameState.isPlaying, gameState.gameSpeed]);
+  }, [gameState.isPlaying, gameState.gameSpeed, showPauseScreen]);
 
   const rooms = [
     { 
@@ -144,10 +146,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         name: 'TV',
         icon: Tv,
         position: { top: '30%', left: '20%' },
+        timeJump: 120, // 2 horas
         action: {
           question: 'Assistir TV?',
           effects: { social: 15, productivity: -10, energy: -5 },
-          consequence: 'Alex assistiu TV e relaxou, mas perdeu um pouco de produtividade.'
+          consequence: 'Alex assistiu TV por 2 horas e relaxou, mas perdeu um pouco de produtividade.'
         }
       },
       {
@@ -155,10 +158,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         name: 'Telefone',
         icon: Phone,
         position: { top: '60%', left: '70%' },
+        timeJump: 30, // 30 minutos
         action: {
           question: 'Ligar para um amigo?',
           effects: { social: 20, energy: -5, sleep: -5 },
-          consequence: 'Alex ligou para um amigo e teve uma conversa agradável.'
+          consequence: 'Alex ligou para um amigo e teve uma conversa agradável por 30 minutos.'
         }
       }
     ],
@@ -169,10 +173,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         name: 'Geladeira',
         icon: Refrigerator,
         position: { top: '25%', left: '15%' },
+        timeJump: 15, // 15 minutos
         action: {
           question: 'Pegar um lanche saudável?',
           effects: { health: 15, energy: 10, productivity: -5 },
-          consequence: 'Alex comeu um lanche saudável e se sentiu mais energizado.'
+          consequence: 'Alex comeu um lanche saudável rapidamente e se sentiu mais energizado.'
         }
       },
       {
@@ -180,10 +185,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         name: 'Fogão',
         icon: ChefHat,
         position: { top: '50%', left: '75%' },
+        timeJump: 90, // 1h30
         action: {
           question: 'Cozinhar uma refeição completa?',
           effects: { productivity: 10, health: 10, energy: -10, social: -5 },
-          consequence: 'Alex cozinhou uma refeição deliciosa, mas gastou tempo e energia.'
+          consequence: 'Alex cozinhou uma refeição deliciosa por 1h30, mas gastou tempo e energia.'
         }
       }
     ],
@@ -194,10 +200,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         name: 'Cama',
         icon: Bed,
         position: { top: '40%', left: '20%' },
+        timeJump: 480, // 8 horas
         action: {
           question: 'Dormir um pouco?',
           effects: { sleep: 25, health: 10, energy: 20 },
-          consequence: 'Alex dormiu e se sentiu muito mais descansado e energizado.'
+          consequence: 'Alex dormiu por 8 horas e se sentiu muito mais descansado e energizado.'
         }
       },
       {
@@ -205,10 +212,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         name: 'Computador',
         icon: Monitor,
         position: { top: '30%', left: '70%' },
+        timeJump: 120, // 2 horas
         action: {
           question: 'Usar o computador para trabalhar?',
           effects: { productivity: 20, health: -10, social: -10, sleep: -5 },
-          consequence: 'Alex trabalhou no computador e foi produtivo, mas se cansou.'
+          consequence: 'Alex trabalhou no computador por 2 horas e foi produtivo, mas se cansou.'
         }
       },
       {
@@ -216,10 +224,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         name: 'Estante de Livros',
         icon: BookOpen,
         position: { top: '65%', left: '45%' },
+        timeJump: 60, // 1 hora
         action: {
           question: 'Ler por 1 hora?',
           effects: { productivity: 10, energy: -10 },
-          consequence: 'Alex leu um livro interessante e aprendeu algo novo.'
+          consequence: 'Alex leu um livro interessante por 1 hora e aprendeu algo novo.'
         }
       }
     ],
@@ -230,10 +239,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         name: 'Chuveiro',
         icon: Shower,
         position: { top: '35%', left: '25%' },
+        timeJump: 20, // 20 minutos
         action: {
           question: 'Tomar banho?',
           effects: { health: 15, energy: 10, productivity: 5 },
-          consequence: 'Alex tomou um banho relaxante e se sentiu renovado.'
+          consequence: 'Alex tomou um banho relaxante de 20 minutos e se sentiu renovado.'
         }
       },
       {
@@ -241,10 +251,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         name: 'Espelho',
         icon: Mirror,
         position: { top: '25%', left: '70%' },
+        timeJump: 15, // 15 minutos
         action: {
           question: 'Se arrumar e cuidar da aparência?',
           effects: { social: 10, energy: -5, productivity: 5 },
-          consequence: 'Alex se arrumou e se sentiu mais confiante para o dia.'
+          consequence: 'Alex se arrumou por 15 minutos e se sentiu mais confiante para o dia.'
         }
       }
     ],
@@ -255,10 +266,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         name: 'Esteira',
         icon: Activity,
         position: { top: '30%', left: '20%' },
+        timeJump: 30, // 30 minutos
         action: {
           question: 'Correr por 30 minutos?',
           effects: { health: 20, energy: -15, sleep: -10 },
-          consequence: 'Alex correu na esteira e melhorou sua saúde cardiovascular.'
+          consequence: 'Alex correu na esteira por 30 minutos e melhorou sua saúde cardiovascular.'
         }
       },
       {
@@ -266,10 +278,11 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         name: 'Pesos',
         icon: Dumbbell,
         position: { top: '55%', left: '70%' },
+        timeJump: 45, // 45 minutos
         action: {
           question: 'Fazer treino de força?',
           effects: { health: 15, productivity: 5, energy: -10 },
-          consequence: 'Alex fez um treino de força e se sentiu mais forte.'
+          consequence: 'Alex fez um treino de força por 45 minutos e se sentiu mais forte.'
         }
       }
     ]
@@ -286,7 +299,7 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
   ];
 
   const handleRoomChange = (direction: 'prev' | 'next') => {
-    if (isTransitioning) return;
+    if (isTransitioning || showPauseScreen) return;
     
     setIsTransitioning(true);
     
@@ -301,16 +314,31 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
   };
 
   const togglePlay = () => {
-    setGameState(prev => ({ ...prev, isPlaying: !prev.isPlaying }));
+    if (gameState.isPlaying) {
+      // Pausar o jogo
+      setGameState(prev => ({ ...prev, isPlaying: false }));
+      setShowPauseScreen(true);
+    } else {
+      // Despausar o jogo
+      setGameState(prev => ({ ...prev, isPlaying: true }));
+      setShowPauseScreen(false);
+    }
+  };
+
+  const resumeGame = () => {
+    setGameState(prev => ({ ...prev, isPlaying: true }));
+    setShowPauseScreen(false);
   };
 
   const saveGame = () => {
+    if (showPauseScreen) return;
     setShowSaveMessage(true);
     setTimeout(() => setShowSaveMessage(false), 2000);
     // Implementar lógica de salvamento aqui
   };
 
   const resetGame = () => {
+    if (showPauseScreen) return;
     setGameState({
       day: 1,
       hour: 8,
@@ -327,23 +355,56 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         productivity: 50
       }
     });
+    setShowPauseScreen(false);
   };
 
   const setGameSpeed = (speed: number) => {
+    if (showPauseScreen) return;
     setGameState(prev => ({ ...prev, gameSpeed: speed }));
   };
 
   const handleObjectClick = (object: RoomObject) => {
+    if (showPauseScreen) return;
+    
     if (gameState.isPlaying) {
       setGameState(prev => ({ ...prev, isPlaying: false }));
     }
     setShowModal({ isOpen: true, object });
   };
 
+  const addTimeToGame = (minutes: number) => {
+    setGameState(prev => {
+      let newMinute = prev.minute + minutes;
+      let newHour = prev.hour;
+      let newDay = prev.day;
+
+      if (newMinute >= 60) {
+        newHour += Math.floor(newMinute / 60);
+        newMinute = newMinute % 60;
+      }
+
+      if (newHour >= 24) {
+        newDay += Math.floor(newHour / 24);
+        newHour = newHour % 24;
+      }
+
+      return {
+        ...prev,
+        minute: newMinute,
+        hour: newHour,
+        day: newDay
+      };
+    });
+  };
+
   const handleActionConfirm = () => {
     if (!showModal.object) return;
 
     const { effects, consequence } = showModal.object.action;
+    const timeJump = showModal.object.timeJump;
+    
+    // Aplicar pulo de tempo
+    addTimeToGame(timeJump);
     
     setGameState(prev => {
       const newFactors = { ...prev.factors };
@@ -367,7 +428,8 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
       return {
         ...prev,
         factors: newFactors,
-        score: Math.max(0, prev.score + scoreChange)
+        score: Math.max(0, prev.score + scoreChange),
+        isPlaying: true // Retomar o jogo após a ação
       };
     });
 
@@ -381,6 +443,7 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
 
   const handleActionCancel = () => {
     setShowModal({ isOpen: false, object: null });
+    setGameState(prev => ({ ...prev, isPlaying: true })); // Retomar o jogo
   };
 
   const currentRoom = rooms[gameState.currentRoom];
@@ -407,10 +470,13 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
           <div className="flex items-center gap-1">
             <button
               onClick={onBack}
+              disabled={showPauseScreen}
               className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
-                isDark 
-                  ? 'hover:bg-slate-800 text-white' 
-                  : 'hover:bg-gray-100 text-gray-900'
+                showPauseScreen 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : isDark 
+                    ? 'hover:bg-slate-800 text-white' 
+                    : 'hover:bg-gray-100 text-gray-900'
               }`}
             >
               <ArrowLeft className="w-4 h-4" />
@@ -419,20 +485,23 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
             <button
               onClick={togglePlay}
               className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
-                gameState.isPlaying
+                gameState.isPlaying && !showPauseScreen
                   ? 'bg-red-500 hover:bg-red-600 text-white'
                   : 'bg-emerald-500 hover:bg-emerald-600 text-white'
               }`}
             >
-              {gameState.isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+              {gameState.isPlaying && !showPauseScreen ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
             </button>
             
             <button
               onClick={saveGame}
+              disabled={showPauseScreen}
               className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
-                isDark 
-                  ? 'hover:bg-slate-800 text-emerald-400' 
-                  : 'hover:bg-gray-100 text-emerald-600'
+                showPauseScreen 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : isDark 
+                    ? 'hover:bg-slate-800 text-emerald-400' 
+                    : 'hover:bg-gray-100 text-emerald-600'
               }`}
             >
               <Save className="w-3 h-3" />
@@ -491,12 +560,15 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
                 <button
                   key={speed}
                   onClick={() => setGameSpeed(speed)}
+                  disabled={showPauseScreen}
                   className={`px-2 py-1 rounded text-xs font-bold transition-all duration-200 ${
-                    gameState.gameSpeed === speed
-                      ? 'bg-emerald-500 text-white'
-                      : isDark
-                        ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    showPauseScreen 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : gameState.gameSpeed === speed
+                        ? 'bg-emerald-500 text-white'
+                        : isDark
+                          ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
                   {speed}x
@@ -515,10 +587,46 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
       {/* SEÇÃO DO MEIO - 65% da altura */}
       <main className="h-[65vh] relative overflow-hidden">
         
+        {/* Tela de Pausa */}
+        {showPauseScreen && (
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className={`max-w-sm w-full rounded-2xl p-8 border-2 transition-all duration-300 ${
+              isDark 
+                ? 'bg-slate-900 border-slate-700' 
+                : 'bg-white border-gray-200 shadow-2xl'
+            }`}>
+              <div className="text-center">
+                <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
+                  isDark ? 'bg-slate-800' : 'bg-gray-100'
+                }`}>
+                  <Pause className="w-10 h-10 text-orange-500" />
+                </div>
+                <h2 className={`text-2xl font-bold mb-4 transition-colors duration-300 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}>
+                  Jogo Pausado
+                </h2>
+                <p className={`text-sm mb-8 transition-colors duration-300 ${
+                  isDark ? 'text-slate-400' : 'text-gray-600'
+                }`}>
+                  Deseja voltar ao jogo?
+                </p>
+                <button
+                  onClick={resumeGame}
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 px-6 rounded-xl font-bold text-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                >
+                  <Play className="w-5 h-5" />
+                  Continuar Jogo
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Cenário do Cômodo */}
         <div className={`h-full relative transition-all duration-300 ${
           isTransitioning ? 'scale-95 opacity-50' : 'scale-100 opacity-100'
-        }`}>
+        } ${showPauseScreen ? 'pointer-events-none' : ''}`}>
           <div className={`h-full bg-gradient-to-br ${currentRoom.background} flex flex-col items-center justify-center relative ${
             isDark ? 'text-white' : 'text-gray-900'
           }`}>
@@ -547,10 +655,13 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
                 <button
                   key={object.id}
                   onClick={() => handleObjectClick(object)}
+                  disabled={showPauseScreen}
                   className={`absolute p-3 rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110 border-2 ${
-                    isDark 
-                      ? 'bg-slate-800/80 hover:bg-slate-700 text-white border-slate-600 hover:border-slate-500' 
-                      : 'bg-white/90 hover:bg-gray-100 text-gray-900 border-gray-200 hover:border-gray-300 shadow-lg'
+                    showPauseScreen 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : isDark 
+                        ? 'bg-slate-800/80 hover:bg-slate-700 text-white border-slate-600 hover:border-slate-500' 
+                        : 'bg-white/90 hover:bg-gray-100 text-gray-900 border-gray-200 hover:border-gray-300 shadow-lg'
                   }`}
                   style={{ 
                     top: object.position.top, 
@@ -585,30 +696,30 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
         {/* Setas de Navegação */}
         <button
           onClick={() => handleRoomChange('prev')}
-          disabled={isTransitioning}
+          disabled={isTransitioning || showPauseScreen}
           className={`absolute left-4 top-1/2 transform -translate-y-1/2 p-3 rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110 ${
             isDark 
               ? 'bg-slate-800/80 hover:bg-slate-700 text-white border border-slate-700' 
               : 'bg-white/90 hover:bg-gray-100 text-gray-900 border border-gray-200 shadow-lg'
-          } ${isTransitioning ? 'opacity-50 cursor-not-allowed' : ''}`}
+          } ${(isTransitioning || showPauseScreen) ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
         
         <button
           onClick={() => handleRoomChange('next')}
-          disabled={isTransitioning}
+          disabled={isTransitioning || showPauseScreen}
           className={`absolute right-4 top-1/2 transform -translate-y-1/2 p-3 rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110 ${
             isDark 
               ? 'bg-slate-800/80 hover:bg-slate-700 text-white border border-slate-700' 
               : 'bg-white/90 hover:bg-gray-100 text-gray-900 border border-gray-200 shadow-lg'
-          } ${isTransitioning ? 'opacity-50 cursor-not-allowed' : ''}`}
+          } ${(isTransitioning || showPauseScreen) ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <ChevronRight className="w-6 h-6" />
         </button>
       </main>
 
-      {/* SEÇÃO INFERIOR - 20% da altura */}
+      {/* SEÇÃO INFERIOR - 20% da altura - FATORES HORIZONTAIS */}
       <footer className={`h-[20vh] px-4 py-3 border-t transition-colors duration-300 ${
         isDark 
           ? 'bg-slate-900/95 border-slate-800' 
@@ -621,14 +732,15 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
             Status de Alex
           </h3>
           
-          <div className="space-y-2">
-            {factors.map((factor) => {
+          {/* Grid de Fatores - 2 linhas, otimizado para mobile */}
+          <div className="grid grid-cols-3 gap-3 mb-2">
+            {factors.slice(0, 3).map((factor) => {
               const value = gameState.factors[factor.key as keyof typeof gameState.factors];
               const IconComponent = factor.icon;
               
               return (
-                <div key={factor.key} className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                <div key={factor.key} className="flex flex-col items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${
                     isDark ? 'bg-slate-800' : 'bg-gray-100'
                   }`}>
                     <IconComponent className={`w-4 h-4 ${
@@ -637,8 +749,20 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
                     }`} />
                   </div>
                   
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
+                  <div className="w-full">
+                    <div className={`h-2 rounded-full mb-1 transition-colors duration-300 ${
+                      isDark ? 'bg-slate-800' : 'bg-gray-200'
+                    }`}>
+                      <div
+                        className={`h-2 rounded-full transition-all duration-500 ${
+                          value >= 70 ? 'bg-green-500' :
+                          value >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                        }`}
+                        style={{ width: `${value}%` }}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
                       <span className={`text-xs font-medium transition-colors duration-300 ${
                         isDark ? 'text-white' : 'text-gray-900'
                       }`}>
@@ -650,8 +774,31 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
                         {value}%
                       </span>
                     </div>
-                    
-                    <div className={`h-2 rounded-full transition-colors duration-300 ${
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Segunda linha com 2 fatores centralizados */}
+          <div className="grid grid-cols-2 gap-6 max-w-xs mx-auto">
+            {factors.slice(3, 5).map((factor) => {
+              const value = gameState.factors[factor.key as keyof typeof gameState.factors];
+              const IconComponent = factor.icon;
+              
+              return (
+                <div key={factor.key} className="flex flex-col items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${
+                    isDark ? 'bg-slate-800' : 'bg-gray-100'
+                  }`}>
+                    <IconComponent className={`w-4 h-4 ${
+                      value >= 70 ? 'text-green-500' :
+                      value >= 40 ? 'text-yellow-500' : 'text-red-500'
+                    }`} />
+                  </div>
+                  
+                  <div className="w-full">
+                    <div className={`h-2 rounded-full mb-1 transition-colors duration-300 ${
                       isDark ? 'bg-slate-800' : 'bg-gray-200'
                     }`}>
                       <div
@@ -661,6 +808,19 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
                         }`}
                         style={{ width: `${value}%` }}
                       />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs font-medium transition-colors duration-300 ${
+                        isDark ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        {factor.name}
+                      </span>
+                      <span className={`text-xs font-bold transition-colors duration-300 ${
+                        isDark ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        {value}%
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -689,6 +849,14 @@ const MobileGameInterface: React.FC<MobileGameInterfaceProps> = ({ onBack }) => 
               }`}>
                 {showModal.object.action.question}
               </h3>
+              <p className={`text-sm transition-colors duration-300 ${
+                isDark ? 'text-slate-400' : 'text-gray-600'
+              }`}>
+                Tempo necessário: {showModal.object.timeJump >= 60 
+                  ? `${Math.floor(showModal.object.timeJump / 60)}h${showModal.object.timeJump % 60 > 0 ? ` ${showModal.object.timeJump % 60}min` : ''}`
+                  : `${showModal.object.timeJump}min`
+                }
+              </p>
             </div>
 
             <div className="flex gap-3">
